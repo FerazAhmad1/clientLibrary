@@ -1,15 +1,43 @@
-import { Box, Button, Flex, Input } from "@chakra-ui/react";
+/* eslint-disable no-unused-vars */
+import { Box, Button, Flex, Input, position } from "@chakra-ui/react";
 import {
   SearchIcon,
   ShoppingCartIcon,
   UserIcon,
   ViewListIcon,
 } from "@heroicons/react/solid";
+import { useRef, useEffect, useState } from "react";
 
 function Navbar() {
   const inputHeight = "40px";
+  const navRef = useRef();
+  const [postion, setPosition] = useState("");
+  const obsCallBack = (entries, observer) => {
+    const [entry] = entries;
+    if (!entry.isIntersecting) {
+      // setPosition("fixed");
+      console.log("if ");
+    } else {
+      // setPosition("");
+      console.log("else");
+    }
+  };
+  const obsOption = {
+    root: null,
+    threshold: 0,
+  };
+
+  useEffect(() => {
+    console.log("i am useEffect");
+    const observer = new IntersectionObserver(obsCallBack, obsOption);
+
+    if (navRef.current) {
+      observer.observe(navRef.current);
+    }
+  }, []);
+
   return (
-    <Box bg="gray.800" p={4}>
+    <Box ref={navRef} bg="gray.800" p={4} style={{ position: postion }}>
       <Flex
         maxW="7xl"
         mx="auto"
@@ -18,6 +46,7 @@ function Navbar() {
         justifyContent="space-between"
         h={16}
       >
+        {console.log("i am running", postion)}
         <Box>
           <span className="text-white text-2xl font-bold">Book House</span>
         </Box>
