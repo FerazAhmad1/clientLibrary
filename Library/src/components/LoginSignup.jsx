@@ -1,10 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 function LoginSignup() {
   const [isLogin, setIsLogin] = useState(true);
   const emailRef = useRef();
   const passwordRef = useRef();
+
   const toggleForm = () => {
     setIsLogin(!isLogin);
   };
@@ -15,11 +17,11 @@ function LoginSignup() {
       alert("Please give email");
       return;
     }
+
     if (!passwordRef.current.value || !passwordRef.current.value.trim()) {
       alert("Please give password");
       return;
     }
-    console.log(emailRef.current.value);
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
