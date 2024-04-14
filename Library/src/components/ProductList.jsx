@@ -6,9 +6,9 @@ function ProductList({ products }) {
   return (
     <div>
       <div className="flex flex-wrap gap-6 md:gap-16">
-        {products.map((product, index) => (
+        {products.map((product) => (
           <Box
-            key={index}
+            key={product.id}
             p={4}
             m={2}
             borderWidth="1px"

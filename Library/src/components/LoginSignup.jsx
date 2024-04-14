@@ -1,12 +1,26 @@
-import { useState } from "react";
+/* eslint-disable no-unused-vars */
+import { useRef, useState } from "react";
 
 function LoginSignup() {
   const [isLogin, setIsLogin] = useState(true);
-
+  const emailRef = useRef();
+  const passwordRef = useRef();
   const toggleForm = () => {
     setIsLogin(!isLogin);
   };
+  const submitHandler = (e) => {
+    e.preventDefault();
 
+    if (!emailRef.current.value || !emailRef.current.value.trim()) {
+      alert("Please give email");
+      return;
+    }
+    if (!passwordRef.current.value || !passwordRef.current.value.trim()) {
+      alert("Please give password");
+      return;
+    }
+    console.log(emailRef.current.value);
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -29,6 +43,7 @@ function LoginSignup() {
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
+                ref={emailRef}
               />
             </div>
             <div>
@@ -43,6 +58,7 @@ function LoginSignup() {
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
+                ref={passwordRef}
               />
             </div>
           </div>
@@ -75,6 +91,7 @@ function LoginSignup() {
 
           <div>
             <button
+              onClick={submitHandler}
               type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
