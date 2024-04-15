@@ -4,7 +4,8 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import Product from "./components/Product";
 import ProductDetail from "./components/ProductDetail.jsx";
-
+import {ApolloClient,InMemoryCache,ApolloProvider,HttpLink,from} from "@apollo/client"
+import {onError} from '@apollo/client/link/error'
 function App() {
   return (
     <>
