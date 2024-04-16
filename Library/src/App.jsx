@@ -12,6 +12,7 @@ import {
   from,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
+import { Route, Routes } from "react-router-dom";
 
 const errorLink = onError(({ graphqlErrors, networkError }) => {
   if (graphqlErrors) {
@@ -35,7 +36,11 @@ function App() {
   return (
     <>
       <ApolloProvider client={client}>
-        <LoginSignup />
+        <Routes>
+          <Route path="/" element={<LoginSignup />} />
+          <Route path="/product" element={<Product />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+        </Routes>
       </ApolloProvider>
 
       {/* <Navbar />*/}

@@ -1,13 +1,19 @@
 /* eslint-disable no-unused-vars */
 import { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { login } from "../features/authentication/authSlice";
 import { useQuery, useMutation, gql } from "@apollo/client";
-import { ADD_USER } from "../GraphQl/Mutation";
+import { ADD_USER, LOGIN_HANDLER } from "../GraphQl/Mutation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 function LoginSignup() {
   const [addUserMutation, { loading, error, data }] = useMutation(ADD_USER);
+  const [loginMutation] = useMutation(LOGIN_HANDLER);
   const [isLogin, setIsLogin] = useState(true);
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const emailRef = useRef();
   const passwordRef = useRef();
   const nameRef = useRef();
@@ -15,22 +21,22 @@ function LoginSignup() {
   const toggleForm = () => {
     setIsLogin((prevState) => !prevState);
   };
+  const navigateTo = (path) => navigate(path);
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    console.log(isLogin, nameRef.current.value);
     if (!emailRef.current.value || !emailRef.current.value.trim()) {
-      alert("Please give email");
+      showToast("Please fill email");
       return;
     }
 
     if (!passwordRef.current.value || !passwordRef.current.value.trim()) {
-      alert("Please give password");
+      showToast("Please fill password");
       return;
     }
 
     if (!isLogin && !nameRef.current.value && !nameRef.current.value.trim()) {
-      alert("Please give name");
+      showToast("Please fill name");
       return;
     }
     let email = emailRef.current.value.trim();
@@ -39,19 +45,58 @@ function LoginSignup() {
     let name;
     if (!isLogin) {
       name = nameRef.current.value.trim();
-      await addUserMutation({
+      const response = await addUserMutation({
         variables: {
           name,
           email,
           password,
         },
       });
-
+      const {
+        addUser: { error },
+      } = response.data;
       console.log(data, "ffffffffffffffffffffffffff", error, loading);
+      if (error !== null && error === "Validation error") {
+        showToast("this email already exist");
+        return;
+      } else {
+        const {
+          addUser: { token },
+        } = response.data;
+        dispatch(login({ name, email, token }));
+        navigateTo("/product");
+        toggleForm();
+      }
+      return;
+    } else {
+      const response = await loginMutation({
+        variables: {
+          email,
+          password,
+        },
+      });
+      const { success, token } = response.data.loginHandler;
+      if (success) {
+        dispatch(login({ token, email }));
+        navigateTo("/product");
+        toggleForm();
+        return;
+      }
     }
-
-    toggleForm();
   };
+
+  const showToast = (message, type = "error") => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -161,6 +206,7 @@ function LoginSignup() {
           </p>
         </div>
       </div>
+      <ToastContainer theme="dark" />
     </div>
   );
 }

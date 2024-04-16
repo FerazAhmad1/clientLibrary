@@ -14,3 +14,13 @@ export const ADD_USER = gql`
     }
   }
 `;
+
+export const LOGIN_HANDLER = gql`
+  mutation LoginHandler($email: String!, $password: String!) {
+    loginHandler(email: $email, password: $password) {
+      success
+      token
+      error
+    }
+  }
+`;
