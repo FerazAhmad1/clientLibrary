@@ -6,6 +6,7 @@ import {
   UserIcon,
   ViewListIcon,
 } from "@heroicons/react/solid";
+import { NavLink } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
 
 function Navbar() {
@@ -46,7 +47,6 @@ function Navbar() {
         justifyContent="space-between"
         h={16}
       >
-        {console.log("i am running", postion)}
         <Box>
           <span className="text-white text-2xl font-bold">Book House</span>
         </Box>
@@ -80,13 +80,22 @@ function Navbar() {
               <SearchIcon width={30} height={30} />
             </Button>
           </Box>
-          <Flex alignItems="center">
+          <Flex alignItems="center" justifyContent="space-between">
             <Button color="black">
               <ViewListIcon className="h-6 w-6" />
             </Button>
             <Button color="black" ml={4}>
               <ShoppingCartIcon className="h-6 w-6" />
             </Button>
+            <Box
+              borderRadius={4}
+              ml={4}
+              bg="white"
+              padding={2}
+              alignItems="center"
+            >
+              <NavLink to="/addbooks">Add Books</NavLink>
+            </Box>
             <Button color="black" ml={4}>
               <UserIcon className="h-6 w-6" />
             </Button>

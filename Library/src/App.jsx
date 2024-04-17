@@ -13,6 +13,8 @@ import {
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { Route, Routes } from "react-router-dom";
+import Addproducts from "./components/Addproducts.jsx";
+import Requireauth from "./components/Requireauth.jsx";
 
 const errorLink = onError(({ graphqlErrors, networkError }) => {
   if (graphqlErrors) {
@@ -38,8 +40,33 @@ function App() {
       <ApolloProvider client={client}>
         <Routes>
           <Route path="/" element={<LoginSignup />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route
+            path="/product"
+            element={
+              <>
+                <Requireauth>
+                  <Navbar />
+                  <Product />
+                </Requireauth>
+              </>
+            }
+          />
+          <Route
+            path="/addbooks"
+            element={
+              <Requireauth>
+                <Addproducts />
+              </Requireauth>
+            }
+          />
+          <Route
+            path="/product/:id"
+            element={
+              <Requireauth>
+                <ProductDetail />
+              </Requireauth>
+            }
+          />
         </Routes>
       </ApolloProvider>
 

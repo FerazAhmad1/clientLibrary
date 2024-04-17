@@ -24,3 +24,24 @@ export const LOGIN_HANDLER = gql`
     }
   }
 `;
+
+export const CREATE_BOOK = gql`
+  mutation CreateBook(
+    $title: String!
+    $author: String!
+    $quantity: Int!
+    $price: Int!
+  ) {
+    createbook(
+      title: $title
+      author: $author
+      quantity: $quantity
+      price: $price
+    ) {
+      id
+      title
+      quantity
+      error
+    }
+  }
+`;

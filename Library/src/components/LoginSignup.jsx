@@ -25,6 +25,8 @@ function LoginSignup() {
   const submitHandler = async (e) => {
     e.preventDefault();
 
+    const role = "admin";
+
     if (!emailRef.current.value || !emailRef.current.value.trim()) {
       showToast("Please fill email");
       return;
@@ -63,7 +65,7 @@ function LoginSignup() {
         const {
           addUser: { token },
         } = response.data;
-        dispatch(login({ name, email, token }));
+        dispatch(login({ role, email, token }));
         navigateTo("/product");
         toggleForm();
       }
@@ -77,7 +79,7 @@ function LoginSignup() {
       });
       const { success, token } = response.data.loginHandler;
       if (success) {
-        dispatch(login({ token, email }));
+        dispatch(login({ token, email, role }));
         navigateTo("/product");
         toggleForm();
         return;
