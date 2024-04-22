@@ -45,3 +45,16 @@ export const CREATE_BOOK = gql`
     }
   }
 `;
+export const SEARCH_BOOK = gql`
+  mutation SearchBook($query: String!) {
+    searchBook(query: $query) {
+      available
+      error
+      Book {
+        id
+        title
+        quantity
+      }
+    }
+  }
+`;

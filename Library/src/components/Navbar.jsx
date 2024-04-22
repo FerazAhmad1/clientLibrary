@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { Box, Button, Flex, Input, position } from "@chakra-ui/react";
 import {
@@ -8,11 +9,35 @@ import {
 } from "@heroicons/react/solid";
 import { NavLink } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
+import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { useDispatch } from "react-redux";
+import { logout } from "../features/authentication/authSlice.jsx";
+import { useMutation } from "@apollo/client";
+import { SEARCH_BOOK } from "../GraphQl/Mutation.jsx";
+import { useSelector } from "react-redux";
+import { authState } from "../features/authentication/authSlice.jsx";
+import AsyncSelect from "react-select/async";
 
 function Navbar() {
   const inputHeight = "40px";
+
+  const signalRef = useRef(new AbortController());
+  const timerRef = useRef();
+
   const navRef = useRef();
+  const dispatch = useDispatch();
   const [postion, setPosition] = useState("");
+  const { token } = useSelector(authState);
+
+  const [search, setSearch] = useState("");
+  const [searchBook] = useMutation(SEARCH_BOOK, {
+    context: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
+
   const obsCallBack = (entries, observer) => {
     const [entry] = entries;
     if (!entry.isIntersecting) {
@@ -36,6 +61,41 @@ function Navbar() {
       observer.observe(navRef.current);
     }
   }, []);
+
+  const logOutHandler = (e) => {
+    dispatch(logout());
+  };
+  const searchHandler = (e) => {
+    console.log("yes i am running");
+    setSearch(e.target.value);
+  };
+
+  const searcher = () => {
+    const query = search.trim();
+    return searchBook({
+      variables: {
+        query,
+      },
+      context: {
+        fetchOptions: {
+          signal: signalRef.current.signal,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }).then((data) => {
+      return data.data.searchBook.Book;
+    });
+  };
+
+  useEffect(() => {
+    if (search.trim().length === 0) return;
+    signalRef.current.abort();
+    signalRef.current = new AbortController();
+    timerRef.current = setTimeout(searcher, 1000);
+    return () => clearTimeout(timerRef.current);
+  }, [search]);
 
   return (
     <Box ref={navRef} bg="gray.800" p={4} style={{ position: postion }}>
@@ -64,8 +124,19 @@ function Navbar() {
               style={{ borderRight: "None" }}
               height={inputHeight}
               color={"whitesmoke"}
+              onChange={searchHandler}
+              value={search}
             />
-
+            <Box mr={4} className="flex">
+              <AsyncSelect
+                cacheOptions
+                loadOptions={searcher || Promise.resolve()}
+                placeholder="Search..."
+                onChange={(selectedOption) => {
+                  console.log("Selected:", selectedOption);
+                }}
+              />
+            </Box>
             <Button
               bg="blue.500"
               color="white"
@@ -80,6 +151,7 @@ function Navbar() {
               <SearchIcon width={30} height={30} />
             </Button>
           </Box>
+
           <Flex alignItems="center" justifyContent="space-between">
             <Button color="black">
               <ViewListIcon className="h-6 w-6" />
@@ -96,9 +168,14 @@ function Navbar() {
             >
               <NavLink to="/addbooks">Add Books</NavLink>
             </Box>
-            <Button color="black" ml={4}>
-              <UserIcon className="h-6 w-6" />
-            </Button>
+            <Menu>
+              <MenuButton bgColor="white" borderRadius={4} ml={4} padding={2}>
+                <UserIcon className="h-6 w-6" />
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={logOutHandler}>Log out</MenuItem>
+              </MenuList>
+            </Menu>
           </Flex>
         </Flex>
       </Flex>

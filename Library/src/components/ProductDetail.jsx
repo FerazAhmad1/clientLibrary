@@ -1,9 +1,30 @@
+/* eslint-disable no-unused-vars */
 import ImageSlider from "./ImageSlider";
 import Button from "./Button";
 import { useState, useEffect } from "react";
 import { Box, Flex, IconButton } from "@chakra-ui/react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/outline";
+import { useParams } from "react-router-dom";
+import { READ_BOOK } from "../GraphQl/Queries.jsx";
+import { authState } from "../features/authentication/authSlice.jsx";
+import { useQuery } from "@apollo/client";
+import { useSelector } from "react-redux";
 function ProductDetail() {
+  const { id } = useParams();
+  const { token } = useSelector(authState);
+  const { loading, error, data } = useQuery(READ_BOOK, {
+    variables: { id },
+    context: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
+
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+
   const [imageUrls, setImageUrls] = useState([]);
   let [count, setCount] = useState(1);
 
@@ -17,9 +38,7 @@ function ProductDetail() {
     setCount((prev) => prev - 1);
   };
 
-  const addToCart=()=>{
-    
-  }
+  const addToCart = () => {};
 
   const book = {
     id: 1,
@@ -51,8 +70,9 @@ function ProductDetail() {
         </div>
         <div className="p-5">
           <Box p={2} textColor={"red"}>
-            <h1>Title: {book.title}</h1>
-            <h1>Price: {book.price}$</h1>
+            <h1>Title: {data && data.readBook && data.readBook.title}</h1>
+            <h1>Author:{data && data.readBook && data.readBook.author}</h1>
+            <h1>Price: {data && data.readBook && data.readBook.price}$</h1>
           </Box>
           <Box mb={4}>
             <Flex alignItems="center">

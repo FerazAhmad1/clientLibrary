@@ -1,15 +1,17 @@
 /* eslint-disable no-unused-vars */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "../features/authentication/authSlice";
+import { authState, login } from "../features/authentication/authSlice";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { ADD_USER, LOGIN_HANDLER } from "../GraphQl/Mutation";
+
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
 function LoginSignup() {
   const [addUserMutation, { loading, error, data }] = useMutation(ADD_USER);
+  const { isLoggedin } = useSelector(authState);
   const [loginMutation] = useMutation(LOGIN_HANDLER);
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
@@ -98,6 +100,11 @@ function LoginSignup() {
       progress: undefined,
     });
   };
+  useEffect(() => {
+    if (isLoggedin) {
+      navigate("/product");
+    }
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
