@@ -15,6 +15,7 @@ import { onError } from "@apollo/client/link/error";
 import { Route, Routes } from "react-router-dom";
 import Addproducts from "./components/Addproducts.jsx";
 import Requireauth from "./components/Requireauth.jsx";
+import Bag from "./components/Bag.jsx";
 
 const errorLink = onError(({ graphqlErrors, networkError }) => {
   if (graphqlErrors) {
@@ -59,6 +60,7 @@ function App() {
               </Requireauth>
             }
           />
+          <Route path="/cart" element={<Bag />} />
           <Route
             path="/product/:id"
             element={

@@ -58,3 +58,27 @@ export const SEARCH_BOOK = gql`
     }
   }
 `;
+
+export const ADD_TO_CART = gql`
+  mutation addToCart(
+    $id: ID!
+    $quantity: Int!
+    $isBorrowed: Boolean!
+    $duration: String!
+  ) {
+    addToCart(
+      id: $id
+      quantity: $quantity
+      isBorrowed: $isBorrowed
+      duration: $duration
+    ) {
+      success
+      error
+      cartItem {
+        id
+        quantity
+        title
+      }
+    }
+  }
+`;

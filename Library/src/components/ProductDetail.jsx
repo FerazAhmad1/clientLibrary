@@ -2,16 +2,36 @@
 import ImageSlider from "./ImageSlider";
 import Button from "./Button";
 import { useState, useEffect } from "react";
-import { Box, Flex, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  IconButton,
+  Radio,
+  RadioGroup,
+  Select,
+} from "@chakra-ui/react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/outline";
 import { useParams } from "react-router-dom";
 import { READ_BOOK } from "../GraphQl/Queries.jsx";
 import { authState } from "../features/authentication/authSlice.jsx";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import { ADD_TO_CART } from "../GraphQl/Mutation.jsx";
 import { useSelector } from "react-redux";
+import Bookdetail from "./Bookdetail.jsx";
+import ButtonIcon from "./ButtonIcon.jsx";
+
 function ProductDetail() {
   const { id } = useParams();
   const { token } = useSelector(authState);
+  const [borrowBuy, setBorrowbuy] = useState();
+  const [duration, setDuration] = useState(1);
+  const [addToCart] = useMutation(ADD_TO_CART, {
+    context: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
   const { loading, error, data } = useQuery(READ_BOOK, {
     variables: { id },
     context: {
@@ -24,6 +44,10 @@ function ProductDetail() {
   useEffect(() => {
     console.log(data);
   }, [data]);
+
+  const handleDurationChange = (e) => {
+    setDuration(e.target.value);
+  };
 
   const [imageUrls, setImageUrls] = useState([]);
   let [count, setCount] = useState(1);
@@ -38,12 +62,28 @@ function ProductDetail() {
     setCount((prev) => prev - 1);
   };
 
-  const addToCart = () => {};
+  const addToCartHandler = async (id, quantity, isBorrowed, duration) => {
+    const response = await addToCart({
+      variables: {
+        id,
+        quantity,
+        isBorrowed: isBorrowed === "Borrow",
+        duration: isBorrowed === "Borrow" ? `${duration}` : "LIFETIME",
+      },
+    });
+
+    console.log(response, "rrrrrrrrrrrrrrrrrrrrrrr");
+  };
 
   const book = {
     id: 1,
     title: "Heat and mass transfer",
     price: 100,
+  };
+
+  const buyTypeHandler = (value) => {
+    console.log(value);
+    setBorrowbuy(value);
   };
   // Simulated fetch of image URLs
   useEffect(() => {
@@ -69,20 +109,18 @@ function ProductDetail() {
           <ImageSlider images={imageUrls} />
         </div>
         <div className="p-5">
-          <Box p={2} textColor={"red"}>
-            <h1>Title: {data && data.readBook && data.readBook.title}</h1>
-            <h1>Author:{data && data.readBook && data.readBook.author}</h1>
-            <h1>Price: {data && data.readBook && data.readBook.price}$</h1>
-          </Box>
+          <Bookdetail
+            data={(data && data.readBook && [{ ...data.readBook }]) || ""}
+          />
           <Box mb={4}>
             <Flex alignItems="center">
-              <IconButton
+              <ButtonIcon
                 background="transparent"
                 aria-label="Minus"
                 icon={<MinusIcon />}
                 size="xs"
                 color="black"
-                onClick={() => dcreaseCount()}
+                clickHandler={dcreaseCount}
                 marginRight="2"
               />
               <Box
@@ -99,17 +137,17 @@ function ProductDetail() {
                 {count}
               </Box>
 
-              <IconButton
+              <ButtonIcon
                 background="transparent"
                 aria-label="Plus"
                 icon={<PlusIcon />}
                 size="xs"
                 color="black"
-                onClick={() => increaseCount()}
+                clickHandler={increaseCount}
                 marginRight="2"
               />
               <Button
-                colorScheme="blue"
+                colorScheme="red"
                 size="xs"
                 onClick={() => console.log("Button clicked")}
               >
@@ -117,10 +155,45 @@ function ProductDetail() {
                 Remove{" "}
               </Button>
             </Flex>
+            <RadioGroup
+              className="flex gap-4"
+              onChange={buyTypeHandler}
+              value={borrowBuy}
+            >
+              <Radio value="Borrow">Borrow</Radio>
+              <Radio value="Buy">Buy</Radio>
+            </RadioGroup>
+            {borrowBuy === "Borrow" && (
+              <Box mt={4}>
+                <Flex alignItems="center">
+                  <label htmlFor="duration" className="mr-2">
+                    Duration:
+                  </label>
+                  <Select
+                    id="duration"
+                    value={duration}
+                    onChange={handleDurationChange}
+                  >
+                    {[1, 2, 3].map((month) => (
+                      <option key={month} value={month}>
+                        {month} month{month > 1 && "s"}
+                      </option>
+                    ))}
+                  </Select>
+                </Flex>
+              </Box>
+            )}
           </Box>
 
           <Box>
-            <Button>AddToCart</Button>
+            <Button
+              clickHandler={() => {
+                addToCartHandler(id, count, borrowBuy, duration);
+                console.log(typeof `${duration}`);
+              }}
+            >
+              AddToCart
+            </Button>
           </Box>
         </div>
       </div>

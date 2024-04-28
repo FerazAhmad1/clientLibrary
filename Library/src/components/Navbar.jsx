@@ -7,7 +7,7 @@ import {
   UserIcon,
   ViewListIcon,
 } from "@heroicons/react/solid";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import { useDispatch } from "react-redux";
@@ -16,6 +16,9 @@ import { useMutation } from "@apollo/client";
 import { SEARCH_BOOK } from "../GraphQl/Mutation.jsx";
 import { useSelector } from "react-redux";
 import { authState } from "../features/authentication/authSlice.jsx";
+import { toast, ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 import AsyncSelect from "react-select/async";
 
 function Navbar() {
@@ -23,13 +26,14 @@ function Navbar() {
 
   const signalRef = useRef(new AbortController());
   const timerRef = useRef();
+  const selected = useRef();
+  const navigate = useNavigate();
 
   const navRef = useRef();
   const dispatch = useDispatch();
   const [postion, setPosition] = useState("");
   const { token } = useSelector(authState);
 
-  const [search, setSearch] = useState("");
   const [searchBook] = useMutation(SEARCH_BOOK, {
     context: {
       headers: {
@@ -65,14 +69,21 @@ function Navbar() {
   const logOutHandler = (e) => {
     dispatch(logout());
   };
-  const searchHandler = (e) => {
-    console.log("yes i am running");
-    setSearch(e.target.value);
+  const showToast = (message, type = "error") => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
-  const searcher = () => {
+  const searcher = (callback, search) => {
     const query = search.trim();
-    return searchBook({
+    searchBook({
       variables: {
         query,
       },
@@ -85,18 +96,29 @@ function Navbar() {
         },
       },
     }).then((data) => {
-      return data.data.searchBook.Book;
+      if (!data.data.searchBook.available) {
+        showToast("Not Found");
+        return callback([]);
+      }
+      const options =
+        data?.data?.searchBook?.Book.map((book) => {
+          console.log(book);
+          return {
+            value: book.id,
+            label: book.title,
+          };
+        }) || [];
+      callback(options);
     });
   };
 
-  useEffect(() => {
-    if (search.trim().length === 0) return;
-    signalRef.current.abort();
-    signalRef.current = new AbortController();
-    timerRef.current = setTimeout(searcher, 1000);
-    return () => clearTimeout(timerRef.current);
-  }, [search]);
+  const searchHandler = () => {
+    if (!selected.current) return;
+    const { value } = selected.current;
+    navigate(`${value}`);
+  };
 
+  const customeDropdownIndicator = () => <div className="none" />;
   return (
     <Box ref={navRef} bg="gray.800" p={4} style={{ position: postion }}>
       <Flex
@@ -113,43 +135,43 @@ function Navbar() {
 
         <Flex>
           <Box mr={4} className="flex">
-            <Input
-              type="text"
-              placeholder="Search..."
-              roundedLeft="md"
-              focusBorderColor="blue.300"
-              _hover={{ borderColor: "blue.300" }}
-              borderTopRightRadius={0}
-              borderBottomRightRadius={0}
-              style={{ borderRight: "None" }}
-              height={inputHeight}
-              color={"whitesmoke"}
-              onChange={searchHandler}
-              value={search}
-            />
-            <Box mr={4} className="flex">
+            <Box mr={4} className="flex flex-1  ">
               <AsyncSelect
                 cacheOptions
-                loadOptions={searcher || Promise.resolve()}
+                loadOptions={(inputValue, callback) => {
+                  const query = inputValue.trim();
+                  if (query.length === 0) return;
+                  signalRef.current.abort();
+                  signalRef.current = new AbortController();
+                  clearTimeout(timerRef.current);
+                  timerRef.current = setTimeout(
+                    searcher,
+                    1000,
+                    callback,
+                    query
+                  );
+                }}
                 placeholder="Search..."
+                className="bg-inherit border-none w-80 "
+                components={{
+                  DropdownIndicator: customeDropdownIndicator,
+                  IndicatorSeparator: () => <div style={{ display: "none" }} />,
+                }}
                 onChange={(selectedOption) => {
                   console.log("Selected:", selectedOption);
+                  selected.current = selectedOption;
                 }}
               />
+              <Button
+                bg="blue.500"
+                color="white"
+                border={"none"}
+                _hover={{ bg: "blue.600" }}
+                onClick={searchHandler}
+              >
+                <SearchIcon width={30} height={30} />
+              </Button>
             </Box>
-            <Button
-              bg="blue.500"
-              color="white"
-              px={4}
-              py={1}
-              roundedRight="md"
-              _hover={{ bg: "blue.600" }}
-              borderTopLeftRadius={0}
-              borderBottomLeftRadius={0}
-              height={"40px"}
-            >
-              <SearchIcon width={30} height={30} />
-            </Button>
           </Box>
 
           <Flex alignItems="center" justifyContent="space-between">
@@ -179,6 +201,7 @@ function Navbar() {
           </Flex>
         </Flex>
       </Flex>
+      <ToastContainer />
     </Box>
   );
 }
