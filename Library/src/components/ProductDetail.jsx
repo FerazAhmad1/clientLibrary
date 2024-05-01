@@ -17,6 +17,8 @@ import { authState } from "../features/authentication/authSlice.jsx";
 import { useQuery, useMutation } from "@apollo/client";
 import { ADD_TO_CART } from "../GraphQl/Mutation.jsx";
 import { useSelector } from "react-redux";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Bookdetail from "./Bookdetail.jsx";
 import ButtonIcon from "./ButtonIcon.jsx";
 
@@ -71,6 +73,13 @@ function ProductDetail() {
         duration: isBorrowed === "Borrow" ? `${duration}` : "LIFETIME",
       },
     });
+    console.log(response.data.addToCart);
+    if (response.data.addToCart) {
+      showToast(
+        `${response.data.addToCart.cartItem.title} is added to cart`,
+        "success"
+      );
+    }
 
     console.log(response, "rrrrrrrrrrrrrrrrrrrrrrr");
   };
@@ -102,6 +111,19 @@ function ProductDetail() {
 
     return () => clearTimeout(timeout);
   }, []);
+
+  const showToast = (message, type = "error") => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
+
   return (
     <>
       <div className="flex items-center p-5 ">
@@ -197,6 +219,7 @@ function ProductDetail() {
           </Box>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }
